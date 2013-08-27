@@ -1,5 +1,5 @@
 % function [] = twinExperimentETKF
-% twinExperimentETKF.m : Do a made-up sea ice experiment
+% twinExperimentETKF.m : Assimilate some real data
 % LM,JBB,TB 8/26/13 ASU
 % Input: No input
 % Output: A whole DA twin experiment
@@ -17,9 +17,8 @@ sim_no = 1;
 
 fprintf('Simulation: %d\n',sim_no)
 
-
-initializeModel;  % spinup, eliminate transient behaviour
-
+D = 1;  % number of model variables
+z0 = 0; % default initial condition
 
 %% ETKF ensemble size and forecast length
 
@@ -39,9 +38,9 @@ rho = ones(D);
 
 %% load SIE data
 
-SIEData = load('sea_ice_extent_1979_2009.txt');
+SIEData = load('../seaIce/data/sea_ice_extent_1979_2009.txt');
 
-t = load('SIE_dates.txt');
+t = load('../seaIce/data/SIE_dates.txt');
 
 N_obs = D;            % number of observations
 % H = eye(N_obs);       % simple observation operator
