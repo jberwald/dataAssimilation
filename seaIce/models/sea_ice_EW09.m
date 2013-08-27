@@ -1,4 +1,4 @@
-function [ z_forecast ]=sea_ice_model( z_background, delta_t , t0 )
+function [ z_forecast ] = sea_ice_model( z_background, delta_t , t0 )
 %   [final_year, full_time_series]=sea_ice_model_EW09(arguments)
 %
 % Model of vertical sea ice thermodynamics with no snow and no shortwave

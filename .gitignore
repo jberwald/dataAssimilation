@@ -33,9 +33,6 @@ pip-log.txt
 *.pdf
 *.png
 *.eps
-
-# We need the .txt files for data
-# *.txt
 *.svg
 *.pkl
 *.cub

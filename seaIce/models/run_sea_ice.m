@@ -20,6 +20,5 @@ function zf = run_sea_ice( E0, delta_t, t0 )
   %
   % author: Jesse Berwald, August 2013
   z_forecast = sea_ice_EW09( E0, delta_t ,t0);
-  z_forecast(:,1) = t0 + z_forecast(:,1); % shift time by t0
   zf = z_forecast;
      
