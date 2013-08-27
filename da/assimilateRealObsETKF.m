@@ -70,6 +70,9 @@ tic
 
 nSkip = 150; % number of obs to skip each time
 % for n_a = 2:length(t)
+dB = 1;
+sigmaB = std(zb);
+sigmaO = R;
 for n_a = nSkip+1:nSkip:length(t)
 
   if(~mod(round(n_a/length(t)*100),10))
@@ -94,12 +97,21 @@ for n_a = nSkip+1:nSkip:length(t)
   
 %   %%%%% adaptive inflation (Wang & Bishop 2003) %%%%%
 %   dOMB = (y(:,n_a) - enthalpyToSIE(zf_m(:,n_a)));
-%   dInfMult = (dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H');
-%   adInf(n_a) = max(dInfMult,1);
+%   dInfMult = max((dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H'),1);
+%   adInf(n_a) = dInfMult;
   
 %   %%%%% give obs same weight as forecast %%%%%
 %   dInfMult = trace(R)/trace(H*Pf(n_a)*H');
 %   adInf(n_a) = max(dInfMult,1);
+
+
+  %%%%% adaptive inflation (Miyoshi 2005, Li 2009) %%%%%
+  dOMB = (y(:,n_a) - enthalpyToSIE(zf_m(:,n_a)));
+  dO = max((dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H'),1);
+  dInfMult = (dB*sigmaO + dO*sigmaB)/(sigmaB+sigmaO);
+  sigmaB = (1 - sigmaB/(sigmaB+sigmaO))*sigmaB;
+  dB = dInfMult;
+  adInf(n_a) = dInfMult;
 
   
   [za,Pa(n_a)] = ...
@@ -134,13 +146,13 @@ ylabel('Energy')
 
 
 
-figure(2)
-clf(2)
+figure(222)
+clf(222)
 % plot(t(2:200),log10(Pf(2:200)),t(2:200),log10(Pa(2:200)))
-% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),...
-%   log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
 plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
+  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
+  t(nSkip+1:nSkip:length(Pa)),...
+  log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
+% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
+%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
   

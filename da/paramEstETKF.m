@@ -95,14 +95,14 @@ for n_a = nSkip+1:nSkip:length(t)
   Pf(n_a) = cov(zf');
   zf_m(:,n_a) = mean(zf,2);
   
-%   %%%%% adaptive inflation (Wang & Bishop 2003) %%%%%
-%   dOMB = (y(:,n_a) - enthalpyToSIE(zf_m(:,n_a)));
-%   dInfMult = (dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H');
-%   adInf(n_a) = max(dInfMult,1);
+  %%%%% adaptive inflation (Wang & Bishop 2003) %%%%%
+  dOMB = (y(:,n_a) - enthalpyToSIE(zf_m(:,n_a)));
+  dInfMult = max((dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H'),1);
+  adInf(n_a) = dInfMult;
   
-  %%%%% give obs same weight as forecast %%%%%
-  dInfMult = trace(R)/trace(H*Pf(n_a)*H');
-  adInf(n_a) = max(dInfMult,1);
+%   %%%%% give obs same weight as forecast %%%%%
+%   dInfMult = trace(R)/trace(H*Pf(n_a)*H');
+%   adInf(n_a) = max(dInfMult,1);
 
   
   [za,Pa(n_a)] = ...
