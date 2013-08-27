@@ -1,0 +1,10 @@
+Daily values of Northern Hemisphere sea ice extent, zonal-mean ice
+edge latitude, and equivalent extent (defined as total surface area,
+including land, north of the zonal-mean sea ice edge latitude). The
+columns are as follows: (1) year, (2) month, (3) day, (4) ice extent
+(10^6 km^2), (5) ice edge latitude (degrees N), (6) equivalent extent
+(10^6 km^2).
+
+Reference: Eisenman, Ian (2010), Geographic muting of changes in the
+Arctic sea ice cover, Geophys. Res. Lett., 37, L16501,
+doi:10.1029/2010GL043741.
