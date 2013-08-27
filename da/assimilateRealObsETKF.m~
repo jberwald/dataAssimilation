@@ -8,7 +8,7 @@
 %% Initialisation
 clear all
 randn('state',100*sum(clock));  % so we don't get fucked by MATLAB's rng.
-addpath(genpath('../'));
+% addpath('../JJBCode');
 
 
 
@@ -68,14 +68,14 @@ za_m(:,1) = za_mean;
 fprintf('Doin'' the ETKF\n')
 tic
 
-nSkip = 150; % number of obs to skip each time
+nSkip = 1500; % number of obs to skip each time
 % for n_a = 2:length(t)
 for n_a = nSkip+1:nSkip:length(t)
 
-  if(~mod(round(n_a/length(t)*100),10))
-    tElapsed = toc;
-    fprintf('%d%% complete, %ds elapsed\n',...
-      round(n_a/length(t)*100),round(tElapsed)); 
+  if(mod(n_a,100)==1)
+    fprintf('%d\% complete\n',round(n_a/length(t)*100)); 
+    toc
+    tic
   end
 
   %%%%% Forecast Step %%%%%
@@ -97,9 +97,9 @@ for n_a = nSkip+1:nSkip:length(t)
 %   dInfMult = (dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H');
 %   adInf(n_a) = max(dInfMult,1);
   
-%   %%%%% give obs same weight as forecast %%%%%
-%   dInfMult = trace(R)/trace(H*Pf(n_a)*H');
-%   adInf(n_a) = max(dInfMult,1);
+  %%%%% give obs same weight as forecast %%%%%
+  dInfMult = trace(R)/trace(H*Pf(n_a)*H');
+  adInf(n_a) = max(dInfMult,1);
 
   
   [za,Pa(n_a)] = ...
@@ -137,10 +137,10 @@ ylabel('Energy')
 figure(2)
 clf(2)
 % plot(t(2:200),log10(Pf(2:200)),t(2:200),log10(Pa(2:200)))
-% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),...
-%   log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
 plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
+  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
+  t(nSkip+1:nSkip:length(Pa)),...
+  log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
+% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
+%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
   

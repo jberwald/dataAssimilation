@@ -30,24 +30,27 @@ N_ens = 10;   % number of ensemble members
 
 %%%%% multiplicative and additive inflation factors %%%%%
 % dInfMult = str2num(getenv('dInf'))/100  % for farmed-out shit
-dInfMult = 1.5;
+dInfMult = 1.0;
 dInfAdd = 0.0;
 
 %%%%% no localization necessary...
 rho = ones(D);
 
-%% load SIE data
+% %% load SIE data
+% 
+% SIEData = load('../seaIce/data/sea_ice_extent_1979_2009.txt');
+% 
+% t = load('../seaIce/data/SIE_dates.txt');
+% 
+% N_obs = D;            % number of observations
+% % H = eye(N_obs);       % simple observation operator
+% H = -1;               % linearized observation operator
+% R = 0.05*eye(N_obs);  % specified ob error covariance matrix
+% 
+% y = SIEData(:,4)';
 
-SIEData = load('../seaIce/data/sea_ice_extent_1979_2009.txt');
+%% Make truth and observations (toy twin experiment)
 
-t = load('../seaIce/data/SIE_dates.txt');
-
-N_obs = D;            % number of observations
-% H = eye(N_obs);       % simple observation operator
-H = -1;               % linearized observation operator
-R = 0.05*eye(N_obs);  % specified ob error covariance matrix
-
-y = SIEData(:,4)';
 
 
 
@@ -86,7 +89,7 @@ for n_a = nSkip+1:nSkip:length(t)
   for k = 1:N_ens
     this_zf = run_sea_ice(zb(:,k),dt_f,currentTime);
     zf(:,k) = this_zf(end,2);
-    ensFcst{k} = this_zf(:,2);
+    ensFcst{n_a,k} = this_zf(:,2);
   end
   
   Pf(n_a) = cov(zf');
@@ -97,9 +100,9 @@ for n_a = nSkip+1:nSkip:length(t)
 %   dInfMult = (dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H');
 %   adInf(n_a) = max(dInfMult,1);
   
-%   %%%%% give obs same weight as forecast %%%%%
-%   dInfMult = trace(R)/trace(H*Pf(n_a)*H');
-%   adInf(n_a) = max(dInfMult,1);
+  %%%%% give obs same weight as forecast %%%%%
+  dInfMult = trace(R)/trace(H*Pf(n_a)*H');
+  adInf(n_a) = max(dInfMult,1);
 
   
   [za,Pa(n_a)] = ...
@@ -134,13 +137,13 @@ ylabel('Energy')
 
 
 
-figure(2)
-clf(2)
+figure(22)
+clf(22)
 % plot(t(2:200),log10(Pf(2:200)),t(2:200),log10(Pa(2:200)))
-% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),...
-%   log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
 plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
+  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
+  t(nSkip+1:nSkip:length(Pa)),...
+  log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
+% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
+%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
   
