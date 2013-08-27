@@ -1,4 +1,4 @@
-function [final_year, full_time_series]=sea_ice_model(varargin)
+function [final_year, full_time_series]=sea_ice_model(params)
 %   [final_year, full_time_series]=sea_ice_model_EW09(arguments)
 %
 % Model of vertical sea ice thermodynamics with no snow and no shortwave
@@ -85,11 +85,11 @@ odesolver='ode45'; % which ode solver to use
 
 % === EDIT PARAMETERS BELOW HERE ===
 % parameter value changes as input to function (batch mode)
-if nargin>0, for j=1:length(varargin), eval([varargin{j} ';']), end, end
-if nargout==0
+%if nargin>0, for j=1:length(varargin), eval([varargin{j} ';']), end, end
+%if nargout==0
     % = Enter changes to default parameter values here for interactive run =
     %dF=25;
-end
+%end
 
 tanha
 

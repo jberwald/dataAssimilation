@@ -1,5 +1,5 @@
-function [ z_forecast ] = sea_ice_model( z_background, delta_t , t0 )
-%   [final_year, full_time_series]=sea_ice_model_EW09(arguments)
+function [ z_forecast ] = sea_ice_EW09_params( z_background, delta_t, t0, params )
+% [final_year, full_time_series]=sea_ice_model_EW09_params( arguments )
 %
 % Model of vertical sea ice thermodynamics with no snow and no shortwave
 % penetration, with quasi-stationary approximation for internal ice
@@ -7,6 +7,19 @@ function [ z_forecast ] = sea_ice_model( z_background, delta_t , t0 )
 % the ocean mixed layer thermally evolves.
 % Prognostic variable is E=-Li*h+c*H*Tml (surface enthalpy).
 %   Output: final_year or full_time_series = [t E Tsrf -E/Li E/(cml*Hml) Ftop F0 FT Fsw]
+%
+% Arguments:
+%    
+%    z_background : background state
+%
+%    delta_t : length of time to evolve model (in years)
+%
+%    t0 : start time, for restarting after assimilation step
+%
+%    params : hash table containing all parameters that the parameter
+%    estimation technique is modifying. These will be updated below.
+%    Eg., params.keys = {'kD', 'F0',...}
+%         params.values = { 5, 6, ... }	  
 %
 % Reference:
 %   Ian Eisenman and J.S. Wettlaufer, 2009. Nonlinear threshold behavior
@@ -24,7 +37,7 @@ function [ z_forecast ] = sea_ice_model( z_background, delta_t , t0 )
 
 global Fbot ai ao ki Li Hml cml F0input Fswinput FTinput tinput v0 tanha Tlin Tsmelt intmeth
 
-% === Parameters ===
+% === Parameters (these are defaults!) === 
 % Measuring time in years for d/dt, using W/m^2 for fluxes and then
 % multiplying d/dt by number of seconds in year.
 yr=3.16e7; % seconds in year
@@ -39,6 +52,13 @@ Tsmelt=0; % sfc temperature for onset of melt
 tanha=0.5*Li; % if not equal to zero, gives width of albedo dependence
 Tlin=0; % linearity of ice surface temperature: 0 for sea ice model, 1 for as mixed layer (linear)
 v0=0.1; % ice export
+
+
+% Reset parameters from 'params' here
+for k=params.keys
+    thisKey = char( k ); % matlab stores keys as cell objects, get at pure string
+    eval( [ thisKey, '=', int2str( params( thisKey ) ) ] );
+end
 
 % = For computing Ftop =
 % atmmod: 0 for surface fluxes specified, 1 for active atmosphere with KLW
