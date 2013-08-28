@@ -1,0 +1,39 @@
+Help for arguments passed to run_sea_ice.m (or sea_ice_EW09_params.m):
+
+Arguments:
+   
+    z_background : background state
+    delta_t : length of time to evolve model (in years)
+
+    t0 : start time, for restarting after assimilation step
+
+    params : hash table containing all parameters that the parameter
+    estimation technique is modifying. These will be updated below.
+
+    In the DA/parameter estimation file that calls run_sea_ice.m, the following cell arrays must be initialized:
+       
+       Container for all the parameters that we are evaluating
+
+       		 keys = { 'key1', 'key2', ... } (strings)
+       
+       Container to hold their values
+
+       		values = { val1, val2, ... }  (floats)
+		
+    Eg., params.keys = {'kD', 'F0',...}
+         params.values = { 5, 6, ... }	  
+
+
+How to view/update the params hash table (maps container):
+
+    To update a value:
+
+       params( myKey ) = newValue;
+       
+       where myKey is a string, or myKey = char( k ), k \in params.keys. 
+
+    To update all values:
+
+       for k=params.keys
+       	   params( char(k) ) = newVal;
+       end

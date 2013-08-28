@@ -23,7 +23,7 @@ z0 = 0; % default initial condition
 %% ETKF ensemble size and forecast length
 
 N_ens = 10;   % number of ensemble members
-% dt_f = 1/12;  % forecast length (years)
+dt_f = 1/12;  % forecast length (years)
 
 
 %% Inflation and Localization
@@ -51,14 +51,43 @@ rho = ones(D);
 
 %% Make truth and observations (toy twin experiment)
 
+loadDefaultParams;  % load default parameters into struct 'defaultParams'
+
+Tf = 10;  % length of simulation (years)
+t = 0:dt_f:Tf;
+
+fprintf('Creating truth\n')
+zt(:,1) = z0;
+for n = 2:length(t)
+   thisForecast = run_sea_ice_params(zt(:,n-1),dt_f,t(n-1), params );
+   zt(n) = thisForecast(end,2);
+end
+
+
+
+N_obs = D;            % number of observations
+% H = eye(N_obs);       % simple observation operator
+H = -1;       % linearized observation operator
+R = 0.1*eye(N_obs);  % specified ob error covariance matrix
+
+% y = H*zt + sqrtm(R)*randn(size(zt(1:N_obs,:)));
+y = enthalpyToSIE(zt) + sqrtm(R)*randn(size(zt(1:N_obs,:)));
+
 
 
 
 %% Make initial ensemble with guess at F
 
-% zb = SIEToEnthalpy(y(1) + R*randn(D,N_ens));  % perturb observation
-zb = SIEToEnthalpy(y(1)) + 3*randn(D,N_ens);  % perturb observation
-zb0 = zb;                                     % store initial zb
+
+% %%%%% real observations version %%%%%
+% % zb = SIEToEnthalpy(y(1) + R*randn(D,N_ens));  % perturb observation
+% zb = SIEToEnthalpy(y(1)) + 3*randn(D,N_ens);  % perturb observation
+% zb0 = zb;                                     % store initial zb
+
+
+%%%%% toy experiment version %%%%%
+zb = zt(:,1)*ones(1,N_ens) + randn(D,N_ens);  % perturb true inital state
+zb0 = zb;   
 
 %% ETKF
 
@@ -71,9 +100,8 @@ za_m(:,1) = za_mean;
 fprintf('Doin'' the ETKF\n')
 tic
 
-nSkip = 150; % number of obs to skip each time
 % for n_a = 2:length(t)
-for n_a = nSkip+1:nSkip:length(t)
+for n_a = 2:length(t)
 
   if(~mod(round(n_a/length(t)*100),10))
     tElapsed = toc;
@@ -83,13 +111,9 @@ for n_a = nSkip+1:nSkip:length(t)
 
   %%%%% Forecast Step %%%%%
   zf = zeros(D,N_ens);
-  dt_f = (t(n_a)-t(n_a-nSkip))/365; % time between obs (in years)
-  currentTime = (t(n_a-nSkip)-t(1))/365;
-  ensFcst = [];
   for k = 1:N_ens
-    this_zf = run_sea_ice(zb(:,k),dt_f,currentTime);
+    this_zf = run_sea_ice_params(zb(:,k),dt_f,t(n_a-1),params);
     zf(:,k) = this_zf(end,2);
-    ensFcst{n_a,k} = this_zf(:,2);
   end
   
   Pf(n_a) = cov(zf');
@@ -127,23 +151,9 @@ toc
 %% Pretty pictures
 figure(1)
 clf(1)
-% plot(t(2:end),zf_m(2:end),t(2:end),za_m(2:end),t,SIEToEnthalpy(y),'x')
-plot(t(nSkip+1:nSkip:end),zf_m(nSkip+1:nSkip:end),...
-  t(nSkip+1:nSkip:end),za_m(nSkip+1:nSkip:end),...
-  t([1 nSkip+1:nSkip:length(t)]),...
-  SIEToEnthalpy(y([1 nSkip+1:nSkip:length(y)])),'x')
+% plot(t,zt(1,:),t(2:end),za_m(1:end-1),t,y,'x')
+% plot(t,zt(1,:),t,za_m,t,y,'x')
+plot(t,zt(1,:),t,za_m,t,SIEToEnthalpy(y),'x',t(2:end),zf_m(2:end))
 xlabel('Time (years)')
 ylabel('Energy')
 
-
-
-figure(22)
-clf(22)
-% plot(t(2:200),log10(Pf(2:200)),t(2:200),log10(Pa(2:200)))
-plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-  t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)),...
-  t(nSkip+1:nSkip:length(Pa)),...
-  log10(Pa(nSkip+1:nSkip:end).*adInf(nSkip+1:nSkip:end)))
-% plot(t(nSkip+1:nSkip:length(Pf)),log10(Pf(nSkip+1:nSkip:end)),...
-%   t(nSkip+1:nSkip:length(Pa)),log10(Pa(nSkip+1:nSkip:end)))
-  

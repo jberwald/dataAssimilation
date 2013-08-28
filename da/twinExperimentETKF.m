@@ -78,7 +78,6 @@ za_m = zeros(D,length(t));
 za_mean = mean(zb,2);
 za_m(:,1) = za_mean;
 
-nan_flag = 1; % tricky shit, for catastrophic filter divergence occurences
 fprintf('Doin'' the ETKF\n')
 tic
 for n_a = 2:length(t)
