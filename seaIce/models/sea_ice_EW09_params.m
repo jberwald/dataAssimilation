@@ -59,7 +59,7 @@ dF=0;   % imposed surface heat flux (annual)
 for k=params.keys
     thisKey = char( k ); % matlab stores keys as cell objects, get at pure string
     eval( [ thisKey, '=', num2str( params( thisKey ) ) ';'] );
-    eval( thisKey )
+%     eval( thisKey )
 end
 
 % = For computing Ftop =
@@ -173,7 +173,7 @@ z_forecast = Y;
 
 % === model equations ===
 function [F Tsrf Ftop F0 FT Fsw]=dEdt(t,E)
-global Fbot cml Hml ki Li F0input Fswinput FTinput tinput ai ao intmeth v0 tanha Tlin Tsmelt intmeth
+global Fbot cml Hml ki Li F0input Fswinput FTinput tinput ai ao intmeth v0 tanha Tlin Tsmelt
 F0=interp1([tinput(end)-1 tinput tinput(1)+1],F0input([end 1:end 1]),mod(t,1),intmeth);
 Fsw=interp1([tinput(end)-1 tinput tinput(1)+1],Fswinput([end 1:end 1]),mod(t,1),intmeth);
 FT=interp1([tinput(end)-1 tinput tinput(1)+1],FTinput([end 1:end 1]),mod(t,1),intmeth);

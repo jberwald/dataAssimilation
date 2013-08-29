@@ -18,7 +18,7 @@ sim_no = 1;
 fprintf('Simulation: %d\n',sim_no)
 
 nState = 1; % dimension of model state vector
-nParam = 2; % number of parameters to estimate
+nParam = 1; % number of parameters to estimate
 D = 2;      % number of variables (size of model + parameter space)
 z0 = 0;     % default initial condition
 
@@ -68,9 +68,9 @@ end
 
 
 
-N_obs = nState;            % number of observations
+N_obs = D;            % number of observations
 % H = eye(N_obs);       % simple observation operator
-H = [-1 zeros(1,nParam)];       % linearized observation operator
+H = -1;       % linearized observation operator
 R = 0.1*eye(N_obs);  % specified ob error covariance matrix
 
 % y = H*zt + sqrtm(R)*randn(size(zt(1:N_obs,:)));
@@ -89,9 +89,9 @@ y = enthalpyToSIE(zt) + sqrtm(R)*randn(size(zt(1:N_obs,:)));
 
 
 %%%%% toy experiment version %%%%%
-zb(1:nState,:) = ...
+zb(1:nState,1) = ...
   zt(:,1)*ones(1,N_ens)+randn(nState,N_ens); % perturb true inital state
-zb(nState+1:D,:) = randn(nParam,N_ens);      % guess at parameter
+zb(nState+1:D,1) = randn(nParam,N_ens);      % guess at parameter
 zb0 = zb;   
 
 %% ETKF
@@ -123,18 +123,17 @@ for n_a = 2:length(t)
   %%%%% Forecast Step %%%%%
   zf = zeros(D,N_ens);
   for k = 1:N_ens
-    modelParams('dF') = zb(nState+1:D,k);
-    this_zf = run_sea_ice_params(zb(1:nState,k),dt_f,t(n_a-1),modelParams);
-    zf(1:nState,k) = this_zf(end,2);
-    zf(nState+1:D,k) = zb(nState+1:D,k);
+    modelValues{k} = zb(
+    this_zf = run_sea_ice_params(zb(:,k),dt_f,t(n_a-1),modelParams);
+    zf(:,k) = this_zf(end,2);
   end
   
-  Pf(:,:,n_a) = cov(zf');
+  Pf(n_a) = cov(zf');
   zf_m(:,n_a) = mean(zf,2);
   
   %%%%% adaptive inflation (Wang & Bishop 2003) %%%%%
   dOMB = (y(:,n_a) - enthalpyToSIE(zf_m(:,n_a)));
-  dInfMult = max((dOMB'*dOMB - trace(R))/trace(H*full(Pf(:,:,n_a))*H'),1);
+  dInfMult = max((dOMB'*dOMB - trace(R))/trace(H*Pf(n_a)*H'),1);
   adInf(n_a) = dInfMult;
   
 %   %%%%% give obs same weight as forecast %%%%%
@@ -142,9 +141,9 @@ for n_a = 2:length(t)
 %   adInf(n_a) = max(dInfMult,1);
 
   
-  [za,Pa(:,:,n_a)] = ...
+  [za,Pa(n_a)] = ...
     ETKF_onestep_obsOperator(zf,y(:,n_a),...
-    @enthalpyToSIEParamEst,H,R,dInfMult,dInfAdd,rho);
+    @enthalpyToSIE,H,R,dInfMult,dInfAdd,rho);
   
   za_m(:,n_a) = mean(za,2);
   
@@ -166,14 +165,7 @@ figure(1)
 clf(1)
 % plot(t,zt(1,:),t(2:end),za_m(1:end-1),t,y,'x')
 % plot(t,zt(1,:),t,za_m,t,y,'x')
-plot(t,zt(1,:),t,za_m(1,:),t,SIEToEnthalpy(y),'x',t(2:end),zf_m(1,2:end))
+plot(t,zt(1,:),t,za_m,t,SIEToEnthalpy(y),'x',t(2:end),zf_m(2:end))
 xlabel('Time (years)')
 ylabel('Energy')
 
-figure(2)
-clf(2)
-% plot(t,zt(1,:),t(2:end),za_m(1:end-1),t,y,'x')
-% plot(t,zt(1,:),t,za_m,t,y,'x')
-plot(t,defaultParams('dF')*ones(1,length(t)),'k--',t,za_m(2,:))
-xlabel('Time (years)')
-ylabel('Parameter')
