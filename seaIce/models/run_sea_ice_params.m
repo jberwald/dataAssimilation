@@ -18,7 +18,10 @@ function zf = run_sea_ice( E0, delta_t, t0, params )
   % t0 - end time of previous forecast. If t0==0, sea_ice_EW09.m
   % assumes a spin_up run.
   %
+  % params - containers.Map objects. See sea_ice_EW09_params_HELP.txt.
+  %
   % author: Jesse Berwald, August 2013
+  %
   z_forecast = sea_ice_EW09_params( E0, delta_t ,t0, params );
   zf = z_forecast;
      

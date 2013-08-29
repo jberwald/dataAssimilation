@@ -1,5 +1,5 @@
 function [ z_forecast ] = sea_ice_EW09_params( z_background, delta_t, t0, params )
-% [final_year, full_time_series]=sea_ice_model_EW09_params( arguments )
+% [final_year, full_time_series]=sea_ice_EW09_params( arguments )
 %
 % Model of vertical sea ice thermodynamics with no snow and no shortwave
 % penetration, with quasi-stationary approximation for internal ice
@@ -49,6 +49,7 @@ Li=3*10^8/yr; % kJ-->W : W = 1000kJ/s
 Hml=50;
 cml=4*10^6/yr;
 Tsmelt=0; % sfc temperature for onset of melt
+tanha=0.5*Li; % if not equal to zero, gives width of albedo dependence
 Tlin=0; % linearity of ice surface temperature: 0 for sea ice model, 1 for as mixed layer (linear)
 v0=0.1; % ice export
 dF=0;   % imposed surface heat flux (annual)
@@ -57,11 +58,9 @@ dF=0;   % imposed surface heat flux (annual)
 % Reset parameters from 'params' here
 for k=params.keys
     thisKey = char( k ); % matlab stores keys as cell objects, get at pure string
-    eval( [ thisKey, '=', int2str( params( thisKey ) ) ';'] );
+    eval( [ thisKey, '=', num2str( params( thisKey ) ) ';'] );
+    eval( thisKey )
 end
-
-tanha=0.5*Li; % if not equal to zero, gives width of albedo dependence
-
 
 % = For computing Ftop =
 % atmmod: 0 for surface fluxes specified, 1 for active atmosphere with KLW
@@ -92,11 +91,8 @@ max_dur = delta_t; %50; % max duration of integration
 if z_background == 0
    E0 =  -3.1*Li; % E=-Li*hi+cml*Hml*Tml
 else
-  E0 = z_background; % initial value of E=-Li*hi+cml*Hml*Tml
+  E0 = z_background; % initial value of E
 end
-
-% JJB: Is this an intermediate time step?
-
 
 intmeth='linear'; % method for interpolating input data in time
 silent=0; % if 1, don't display error or final value

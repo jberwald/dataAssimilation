@@ -19,6 +19,7 @@ function zf = run_sea_ice( E0, delta_t, t0 )
   % assumes a spin_up run.
   %
   % author: Jesse Berwald, August 2013
+  %
   z_forecast = sea_ice_EW09( E0, delta_t ,t0 );
   zf = z_forecast;
      

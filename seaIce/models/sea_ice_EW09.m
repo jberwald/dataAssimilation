@@ -1,5 +1,5 @@
-function [ z_forecast ] = sea_ice_model( z_background, delta_t , t0 )
-%   [final_year, full_time_series]=sea_ice_model_EW09(arguments)
+function [ z_forecast ] = sea_ice_EW09( z_background, delta_t , t0 )
+%   [final_year, full_time_series]=sea_ice_EW09(arguments)
 %
 % Model of vertical sea ice thermodynamics with no snow and no shortwave
 % penetration, with quasi-stationary approximation for internal ice
@@ -70,11 +70,8 @@ max_dur = delta_t; %50; % max duration of integration
 if z_background == 0
    E0 =  -3.1*Li; % E=-Li*hi+cml*Hml*Tml
 else
-  E0 = z_background; % initial value of E=-Li*hi+cml*Hml*Tml
+  E0 = z_background; % initial value of E
 end
-
-% JJB: Is this an intermediate time step?
-
 
 intmeth='linear'; % method for interpolating input data in time
 silent=0; % if 1, don't display error or final value
