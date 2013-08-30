@@ -17,10 +17,10 @@ sim_no = 1;
 
 fprintf('Simulation: %d\n',sim_no)
 
-nState = 1; % dimension of model state vector
-nParam = 2; % number of parameters to estimate
-D = 2;      % number of variables (size of model + parameter space)
-z0 = 0;     % default initial condition
+nState = 1;         % dimension of model state vector
+nParam = 1;         % number of parameters to estimate
+D = nState+nParam;  % total variables (size of model + parameter space)
+z0 = 0;             % default initial condition
 
 %% ETKF ensemble size and forecast length
 
@@ -55,13 +55,23 @@ rho = ones(D);
 
 loadDefaultParams;  % load default parameters into struct 'defaultParams'
 
-Tf = 10;            % length of simulation (years)
+%%%%% set the true parameters we wish to estimate %%%%%
+% defaultParams('dF') = 50; % imposed surface heat flux
+defaultParams('Fbot') = 10; % imposed bottom heat flux
+
+%%%%% spin up for 1 year %%%%%
+zInit = run_sea_ice_params(z0,1,-1,defaultParams);
+z0 = zInit(end,2);
+
+
+Tf = 10;  % length of simulation (years)
 t = 0:dt_f:Tf;
 
 fprintf('Creating truth\n')
 zt(:,1) = z0;
 for n = 2:length(t)
 %   thisForecast = run_sea_ice(zt(:,n-1),dt_f,t(n-1));
+%     defaultParams('hAlpha') = n/length(t);
   thisForecast = run_sea_ice_params(zt(:,n-1),dt_f,t(n-1), defaultParams );
   zt(n) = thisForecast(end,2);
 end
@@ -69,9 +79,9 @@ end
 
 
 N_obs = nState;            % number of observations
-% H = eye(N_obs);       % simple observation operator
-H = [-1 zeros(1,nParam)];       % linearized observation operator
-R = 0.1*eye(N_obs);  % specified ob error covariance matrix
+% H = eye(N_obs);          % simple observation operator
+H = [-1 zeros(1,nParam)];  % linearized observation operator
+R = 0.1*eye(N_obs);        % specified ob error covariance matrix
 
 % y = H*zt + sqrtm(R)*randn(size(zt(1:N_obs,:)));
 y = enthalpyToSIE(zt) + sqrtm(R)*randn(size(zt(1:N_obs,:)));
@@ -91,7 +101,8 @@ y = enthalpyToSIE(zt) + sqrtm(R)*randn(size(zt(1:N_obs,:)));
 %%%%% toy experiment version %%%%%
 zb(1:nState,:) = ...
   zt(:,1)*ones(1,N_ens)+randn(nState,N_ens); % perturb true inital state
-zb(nState+1:D,:) = randn(nParam,N_ens);      % guess at parameter
+% zb(nState+1:D,:) = randn(nParam,N_ens);      % guess at parameter
+zb(nState+1:D,:) = rand(nParam,N_ens);      % guess at parameter (uniform)
 zb0 = zb;   
 
 %% ETKF
@@ -106,7 +117,7 @@ fprintf('Doin'' the ETKF\n')
 tic
 
 
-modelValues = {0,2,0.68,0.2,2,50,0,0.1};
+modelValues = {0,0.5,2,0.68,0.2,2,50,0,0.1};
 
 modelParams = containers.Map(keys,modelValues);
 
@@ -123,7 +134,9 @@ for n_a = 2:length(t)
   %%%%% Forecast Step %%%%%
   zf = zeros(D,N_ens);
   for k = 1:N_ens
-    modelParams('dF') = zb(nState+1:D,k);
+%     modelParams('dF') = zb(nState+1,k);
+%     modelParams('hAlpha') = zb(nState+1,k);
+    modelParams('Fbot') = zb(nState+1,k);
     this_zf = run_sea_ice_params(zb(1:nState,k),dt_f,t(n_a-1),modelParams);
     zf(1:nState,k) = this_zf(end,2);
     zf(nState+1:D,k) = zb(nState+1:D,k);
@@ -144,7 +157,7 @@ for n_a = 2:length(t)
   
   [za,Pa(:,:,n_a)] = ...
     ETKF_onestep_obsOperator(zf,y(:,n_a),...
-    @enthalpyToSIEParamEst,H,R,dInfMult,dInfAdd,rho);
+    @enthalpyToSIE,H,R,dInfMult,dInfAdd,rho);
   
   za_m(:,n_a) = mean(za,2);
   
@@ -174,6 +187,20 @@ figure(2)
 clf(2)
 % plot(t,zt(1,:),t(2:end),za_m(1:end-1),t,y,'x')
 % plot(t,zt(1,:),t,za_m,t,y,'x')
-plot(t,defaultParams('dF')*ones(1,length(t)),'k--',t,za_m(2,:))
+% plot(t,defaultParams('dF')*ones(1,length(t)),'k--',t,za_m(2,:))
+% plot(t,defaultParams('hAlpha')*ones(1,length(t)),'k--',t,za_m(2,:))
+plot(t,defaultParams('Fbot')*ones(1,length(t)),'k--',t,za_m(2,:))
+% plot(t,defaultParams('dF')*ones(1,length(t)),'k--',...
+%   t,defaultParams('Fbot')*ones(1,length(t)),'k-.',...
+%   t,za_m(2:end,:))
+% plot(t,defaultParams('dF')*ones(1,length(t)),'k--',...
+%   t,defaultParams('Fbot')*ones(1,length(t)),'k-.')
+% hold on
+% errorbar(t,za_m(2,:),squeeze(Pa(2,2,:)))
+% errorbar(t,za_m(3,:),squeeze(Pa(3,3,:)),'r')
+% hold off
 xlabel('Time (years)')
 ylabel('Parameter')
+
+
+

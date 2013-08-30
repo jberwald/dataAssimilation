@@ -10,8 +10,8 @@ Hml=50;
 Tlin=0; % linearity of ice surface temperature: 0 for sea ice model, 1 for as mixed layer (linear)
 v0=0.1; % ice export
 
-keys = {'dF','Fbot','ai','ao','ki','Hml','Tlin','v0'};
-values = {10,2,0.68,0.2,2,50,0,0.1};
+keys = {'dF','hAlpha','Fbot','ai','ao','ki','Hml','Tlin','v0'};
+values = {0,0.5,2,0.68,0.2,2,50,0,0.1};
 
 
 defaultParams = containers.Map(keys,values);

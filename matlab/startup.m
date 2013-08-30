@@ -12,7 +12,8 @@ rand('state',sum(100*clock))
 
 %% Fuck you, MATLAB default colours!
 set(0,'DefaultAxesColorOrder',cbrewer('qual','Set1',8))
-set(0,'DefaultFigureColormap',cbrewer('seq','YlOrRd',64)); 
+set(0,'DefaultFigureColormap',cbrewer('seq','YlOrRd',64));
+cbrewerQual = cbrewer('qual','Set1',8);
 %%%%% Note: Permuted the first 3 colors of Set1 using: %%%%%
 % colorbrewer.qual.Set1{8}(1:3,:) = ...
 %  circshift(colorbrewer.qual.Set1{8}(1:3,:),-1);

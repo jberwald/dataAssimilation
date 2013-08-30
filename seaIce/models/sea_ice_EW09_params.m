@@ -49,7 +49,8 @@ Li=3*10^8/yr; % kJ-->W : W = 1000kJ/s
 Hml=50;
 cml=4*10^6/yr;
 Tsmelt=0; % sfc temperature for onset of melt
-tanha=0.5*Li; % if not equal to zero, gives width of albedo dependence
+hAlpha = 0.5; % bifurcation parameter from SI of paper
+tanha=hAlpha*Li; % if not equal to zero, gives width of albedo dependence
 Tlin=0; % linearity of ice surface temperature: 0 for sea ice model, 1 for as mixed layer (linear)
 v0=0.1; % ice export
 dF=0;   % imposed surface heat flux (annual)
